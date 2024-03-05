@@ -7,6 +7,11 @@ library(readxl)<br>
 library(ggplot2)<br>
 library(plyr)<br>
 
+# To Run:
+All files are hosted on this Github Page. Simply type the following code into your R console
+
+```runGitHub( "ConlonLab-MMExpression", "drlaurenwasson")```
+
 # Updates
 ## 2024-03-05 Version 1.0 has launched!
 
