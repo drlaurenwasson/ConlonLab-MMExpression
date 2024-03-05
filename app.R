@@ -171,8 +171,8 @@ server <- function(input, output, session) {
   })
   
   #Load in the Protein data frame
-  masterdf <- read_excel("~/Documents/UNC Consulting/Protein_Expression_Project/1-s2.0-S1534580723001818-mmc2.xlsx", sheet = "Master Protein Table")
-  genes<- masterdf$`Gene Symbol`
+  masterdf <- read.csv("https://github.com/drlaurenwasson/ConlonLab-MMExpression/raw/main/files/1-s2.0-S1534580723001818-mmc2.csv", row.names = 1)
+  genes<- masterdf$Gene.Symbol
   rawvalues<- as.data.frame(masterdf[,29:52])
   rownames(rawvalues)<- make.names(genes, unique = TRUE)
   
@@ -224,7 +224,7 @@ server <- function(input, output, session) {
   })
   
   #Load in the RNA data frame
-  rnavalues<- read.table("~/Documents/UNC Consulting/Protein_Expression_Project/RNA_masterdf.txt", sep = "\t")
+  rnavalues<- read.table("https://github.com/drlaurenwasson/ConlonLab-MMExpression/raw/main/files/RNA_masterdf.txt", sep = "\t")
   
   #Get an RNA data frame for the RNAs of interest
   getdatarna<- function(gene, timepoint){
