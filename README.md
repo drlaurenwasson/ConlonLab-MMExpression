@@ -13,5 +13,9 @@ All files are hosted on this Github Page. Simply type the following code into yo
 ```runGitHub( "ConlonLab-MMExpression", "drlaurenwasson")```
 
 # Updates
+## 2024-04-02 Version 1.1 has launched! 
+      - Replaced the RNA data with correct dataset.
+      - Fixed bugs
 ## 2024-03-05 Version 1.0 has launched!
+
 
