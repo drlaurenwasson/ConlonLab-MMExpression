@@ -137,30 +137,31 @@ server <- function(input, output, session) {
       if (p %in% rownames(rawvalues)){
         a<- getdata(p,{timepointsupdate},{normalizeupdate})
         df2=rbind(df2,a)
+        
+        #Subset only the timepoints you want
+        df2<- df2[df2$day %in% {timepointsupdate},]
+        #Plot the scatterplot
+        output$scatterplot <- renderPlot({
+          p<- ggplot(df2, aes(x=day, y=Normalized, group=protein, color=protein)) + 
+            geom_line() +
+            geom_point()+
+            geom_errorbar(aes(ymin=Normalized-sd, ymax=Normalized+sd), width=.2,
+                          position=position_dodge(0.05))
+          p=p+labs(title="Protein Expression", x="Day", y = "Avg. Abundance (Normalized)")+
+            theme_classic()
+          plot(p)
+          observeEvent(input$update, print(as.numeric(input$update)))
+        })
+        p<- ggplot(df2, aes(x=day, y=Normalized, group=protein, color=protein)) + 
+          geom_line() +
+          geom_point()+
+          geom_errorbar(aes(ymin=Normalized-sd, ymax=Normalized+sd), width=.2,
+                        position=position_dodge(0.05))
+        p=p+labs(title="Protein Expression", x="Day", y = "Avg. Abundance (Normalized)")+
+          theme_classic()
       }
 
     }
-    #Subset only the timepoints you want
-    df2<- df2[df2$day %in% {timepointsupdate},]
-    #Plot the scatterplot
-    output$scatterplot <- renderPlot({
-      p<- ggplot(df2, aes(x=day, y=Normalized, group=protein, color=protein)) + 
-        geom_line() +
-        geom_point()+
-        geom_errorbar(aes(ymin=Normalized-sd, ymax=Normalized+sd), width=.2,
-                      position=position_dodge(0.05))
-      p=p+labs(title="Protein Expression", x="Day", y = "Avg. Abundance (Normalized)")+
-        theme_classic()
-      plot(p)
-      observeEvent(input$update, print(as.numeric(input$update)))
-    })
-    p<- ggplot(df2, aes(x=day, y=Normalized, group=protein, color=protein)) + 
-      geom_line() +
-      geom_point()+
-      geom_errorbar(aes(ymin=Normalized-sd, ymax=Normalized+sd), width=.2,
-                    position=position_dodge(0.05))
-    p=p+labs(title="Protein Expression", x="Day", y = "Avg. Abundance (Normalized)")+
-      theme_classic()
     
     output$DownloadPlot = downloadHandler(
       file= paste({proteinsupdate}, {timepointsupdate}, ".png", sep=""),
@@ -198,7 +199,7 @@ server <- function(input, output, session) {
       }
       data_sum<-ddply(data, groupnames, .fun=summary_func,
                       varname)
-      data_sum <- rename(data_sum, c("mean" = varname))
+      colnames(data_sum)[3] = varname
       return(data_sum)
     }
     df2 <- data_summary(df, varname="Normalized", 
@@ -250,7 +251,7 @@ server <- function(input, output, session) {
       }
       data_sum2<-ddply(data, groupnames, .fun=summary_func2,
                        varname)
-      data_sum2 <- rename(data_sum2, c("mean" = varname))
+      colnames(data_sum2)[3]<- varname
       return(data_sum2)
     }
     df4 <- data_summary2(df3, varname="Normalized", 
@@ -278,23 +279,24 @@ server <- function(input, output, session) {
       if (rna %in% rownames(rnavalues)){
         b<- getdatarna(rna,{rnatimepointsupdate},{rnanormalizeupdate})
         df4=rbind(df4,b)
+        #Subset only the timepoints you want
+        df4<- df4[df4$day %in% {rnatimepointsupdate},]
+        #Plot the scatterplot
+        output$rnascatterplot <- renderPlot({
+          p2<- ggplot(df4, aes(x=day, y=Normalized, group=gene, color=gene)) + 
+            geom_line() +
+            geom_point() + 
+            geom_errorbar(aes(ymin=Normalized-sd, ymax=Normalized+sd), width=.2,
+                          position=position_dodge(0.05))
+          p2<- p2+labs(title="RNA Expression", x="Day", y = "Avg. Abundance (Normalized)")+
+            theme_classic() 
+          plot(p2)
+          observeEvent(input$rnaupdate, print(as.numeric(input$rnaupdate)))
+        })
       }
       
     }
-    #Subset only the timepoints you want
-    df4<- df4[df4$day %in% {rnatimepointsupdate},]
-    #Plot the scatterplot
-    output$rnascatterplot <- renderPlot({
-      p2<- ggplot(df4, aes(x=day, y=Normalized, group=gene, color=gene)) + 
-        geom_line() +
-        geom_point() + 
-        geom_errorbar(aes(ymin=Normalized-sd, ymax=Normalized+sd), width=.2,
-                     position=position_dodge(0.05))
-      p2<- p2+labs(title="RNA Expression", x="Day", y = "Avg. Abundance (Normalized)")+
-        theme_classic() 
-      plot(p2)
-      observeEvent(input$rnaupdate, print(as.numeric(input$rnaupdate)))
-    })
+    
     
     
     output$rnaDownloadPlot = downloadHandler(
@@ -349,7 +351,7 @@ server <- function(input, output, session) {
       }
       data_sum2<-ddply(data, groupnames, .fun=summary_func2,
                        varname)
-      data_sum2 <- rename(data_sum2, c("mean" = varname))
+      colnames(data_sum2)[3]<- varname
       return(data_sum2)
     }
     df4 <- data_summary2(df3, varname="Normalized", 
@@ -411,25 +413,27 @@ server <- function(input, output, session) {
       if (rna %in% rownames(rnavalues)){
         b<- getdatarnaprotein(rna,{rnaprottimepointsupdater}, {rnaprottimepointsupdatep},{rnaprotnormalizeupdate})
         dfrp=rbind(dfrp,b)
+        
+        #Subset only the timepoints you want
+        dfrp$group<- paste0(dfrp$gene,dfrp$data)
+        dfrp<- dfrp[dfrp$day %in% c({rnaprottimepointsupdater},{rnaprottimepointsupdatep}),]
+        sf <- max(dfrp$Normalized)
+        #Plot the scatterplot
+        output$rnaprotscatter <- renderPlot({
+          p3<- ggplot(dfrp) +
+            geom_line(aes(x=day, y=Normalized, group=group, color=gene)) +
+            geom_point(aes(x=day, y=Normalized, group=group, color=gene, shape = data),size = 2) + 
+            scale_y_continuous(name = "RNA Expression", sec.axis = sec_axis( ~.*sf, name="Protein Expression")) + 
+            guides(colour = guide_legend(override.aes = list(size=2)))
+          p3<- p3+labs(title="RNA/Protein Expression")+
+            theme_classic() 
+          plot(p3)
+          observeEvent(input$rnaprotupdate, print(as.numeric(input$rnaprotupdate)))
+        })
       }
       
     }
-    #Subset only the timepoints you want
-    dfrp$group<- paste0(dfrp$gene,dfrp$data)
-    dfrp<- dfrp[dfrp$day %in% c({rnaprottimepointsupdater},{rnaprottimepointsupdatep}),]
-    sf <- max(dfrp$Normalized)
-    #Plot the scatterplot
-    output$rnaprotscatter <- renderPlot({
-      p3<- ggplot(dfrp) +
-        geom_line(aes(x=day, y=Normalized, group=group, color=gene)) +
-        geom_point(aes(x=day, y=Normalized, group=group, color=gene, shape = data),size = 2) + 
-        scale_y_continuous(name = "RNA Expression", sec.axis = sec_axis( ~.*sf, name="Protein Expression")) + 
-        guides(colour = guide_legend(override.aes = list(size=2)))
-      p3<- p3+labs(title="RNA/Protein Expression")+
-        theme_classic() 
-      plot(p3)
-      observeEvent(input$rnaprotupdate, print(as.numeric(input$rnaprotupdate)))
-    })
+    
     
     output$rnaprotDownloadPlot = downloadHandler(
       file= paste({rnaprotupdate}, {rnaprottimepointsupdatep}, {rnaprottimepointsupdater},".png", sep=""),
